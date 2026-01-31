@@ -1,0 +1,347 @@
+{
+  "info": {
+    "name": "SnapSplit - Week 4 Async AI Bill Scanning",
+    "description": "Test collection for async AI-powered bill scanning with status polling",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "group_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "expense_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Register User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    pm.test(\"User registered successfully\", function () {",
+              "        pm.response.to.have.status(201);",
+              "    });",
+              "} else if (pm.response.code === 400) {",
+              "    pm.test(\"User already exists (OK)\", function () {",
+              "        pm.response.to.have.status(400);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"testpass123\",\n  \"name\": \"Test User\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Login successful\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.access_token).to.exist;",
+              "    pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"testpass123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Create Group",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Group created successfully\", function () {",
+              "    pm.response.to.have.status(201);",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.exist;",
+              "    pm.collectionVariables.set(\"group_id\", jsonData.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Group\",\n  \"type\": \"CUSTOM\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/groups",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "groups"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Upload Bill Image (Async)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Bill upload accepted (async)\", function () {",
+              "    pm.response.to.have.status(202);",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.exist;",
+              "    pm.expect(jsonData.status).to.eql(\"PROCESSING\");",
+              "    pm.collectionVariables.set(\"expense_id\", jsonData.id);",
+              "    ",
+              "    console.log(\"=== ASYNC UPLOAD RESPONSE ===\");",
+              "    console.log(\"Expense ID:\", jsonData.id);",
+              "    console.log(\"Status:\", jsonData.status);",
+              "    console.log(\"Message:\", jsonData.message);",
+              "    console.log(\"\\n⏱️ Processing in background...\");",
+              "    console.log(\"📡 Use 'Poll Status' request to check progress\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": [],
+              "description": "⚠️ IMPORTANT: Click 'Select Files' and choose your bill image (JPG/PNG)."
+            },
+            {
+              "key": "group_id",
+              "value": "{{group_id}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/expenses/bill",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "expenses",
+            "bill"
+          ]
+        },
+        "description": "Upload a bill image for async AI processing. This endpoint will:\\n1. Save the image\\n2. Create expense with PROCESSING status\\n3. Enqueue background task\\n4. Return immediately (HTTP 202)\\n\\n**Note:** API returns in < 500ms. Use 'Poll Status' to check progress."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Poll Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status retrieved successfully\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    var jsonData = pm.response.json();",
+              "    ",
+              "    console.log(\"=== PROCESSING STATUS ===\");",
+              "    console.log(\"Expense ID:\", jsonData.expense_id);",
+              "    console.log(\"Status:\", jsonData.status);",
+              "    console.log(\"Updated:\", jsonData.updated_at);",
+              "    ",
+              "    if (jsonData.status === \"PROCESSING\") {",
+              "        console.log(\"\\n⏳ Still processing... Poll again in 2-3 seconds\");",
+              "        pm.test(\"Status is PROCESSING\", function () {",
+              "            pm.expect(jsonData.status).to.eql(\"PROCESSING\");",
+              "        });",
+              "    } else if (jsonData.status === \"READY\") {",
+              "        console.log(\"\\n✅ Processing complete!\");",
+              "        console.log(\"--- EXTRACTED DATA ---\");",
+              "        console.log(\"Subtotal:\", jsonData.subtotal);",
+              "        console.log(\"Tax:\", jsonData.tax);",
+              "        console.log(\"Total:\", jsonData.total_amount);",
+              "        console.log(\"Items:\", jsonData.items_count);",
+              "        pm.test(\"AI processing succeeded\", function () {",
+              "            pm.expect(jsonData.status).to.eql(\"READY\");",
+              "            pm.expect(jsonData.total_amount).to.exist;",
+              "            pm.expect(jsonData.items_count).to.be.above(0);",
+              "        });",
+              "    } else if (jsonData.status === \"FAILED\") {",
+              "        console.log(\"\\n❌ Processing failed\");",
+              "        console.log(\"Error:\", jsonData.error_message);",
+              "        pm.test(\"AI processing failed (check logs)\", function () {",
+              "            pm.expect(jsonData.status).to.eql(\"FAILED\");",
+              "        });",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/expenses/{{expense_id}}/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "expenses",
+            "{{expense_id}}",
+            "status"
+          ]
+        },
+        "description": "Poll the processing status of an uploaded bill.\\n\\n**Status values:**\\n- PROCESSING: AI is still working\\n- READY: Processing complete, data available\\n- FAILED: Processing failed\\n\\n**Usage:** Poll every 2-3 seconds until status is READY or FAILED."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get Expense Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Expense retrieved successfully\", function () {",
+              "    pm.response.to.have.status(200);",
+              "    var jsonData = pm.response.json();",
+              "    ",
+              "    console.log(\"=== EXPENSE DETAILS ===\");",
+              "    console.log(\"ID:\", jsonData.id);",
+              "    console.log(\"Status:\", jsonData.status);",
+              "    console.log(\"Total:\", jsonData.total_amount);",
+              "    console.log(\"Items:\", jsonData.items ? jsonData.items.length : 0);",
+              "    ",
+              "    if (jsonData.items && jsonData.items.length > 0) {",
+              "        console.log(\"\\n--- ITEMS ---\");",
+              "        jsonData.items.forEach((item, i) => {",
+              "            console.log(`${i+1}. ${item.item_name}: $${item.price} x ${item.quantity}`);",
+              "        });",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/expenses/{{expense_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "expenses",
+            "{{expense_id}}"
+          ]
+        },
+        "description": "Get full expense details including items and splits.\\n\\n**Note:** Only call this after status is READY."
+      },
+      "response": []
+    }
+  ]
+}

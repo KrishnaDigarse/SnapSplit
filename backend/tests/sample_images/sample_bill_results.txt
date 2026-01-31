@@ -1,0 +1,70 @@
+============================================================
+AI BILL SCANNING TEST RESULTS
+Image: sample_bill.png
+Timestamp: 2026-01-30 20:06:21
+Status: ✅ SUCCESS
+============================================================
+
+📄 RAW OCR TEXT
+------------------------------------------------------------
+SRI KRI SHNA
+Veg Restaurant
+New Muncipa] Bldg
+Joban-Putra Compound
+Nana Chowk , Mumbai 400007
+Ph: 23867544, 23827326
+Date: 01/07/17 Bill No. : 31/3
+PBoy; COUNTER
+Particulars Qty Rate Amount
+MEDU WADA | SSeS
+Sub Total: 65.00
+Dis: @10% : 6.00
+Total ; 59.00
+el GOK : 5.31
+SGST 69% ; Bx
+vn Grand Total ; 7
+GST NO 7AADFHEOGTH
+E.80.E,
+Take Away j
+
+Length: 340 characters
+
+
+🤖 LLM EXTRACTED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "MEDU WADA",
+      "quantity": 1,
+      "price": 65.0
+    }
+  ],
+  "subtotal": 59.0,
+  "tax": 5.31,
+  "total": 64.31
+}
+
+Items: 1
+
+
+✅ VALIDATED & CLEANED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "MEDU WADA",
+      "quantity": 1,
+      "price": "65.00"
+    }
+  ],
+  "subtotal": "59.00",
+  "tax": "5.31",
+  "total": "64.31"
+}
+
+Valid Items: 1
+Total Amount: 64.31
+
+
+============================================================

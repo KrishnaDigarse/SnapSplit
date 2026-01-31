@@ -1,0 +1,115 @@
+============================================================
+AI BILL SCANNING TEST RESULTS
+Image: sample_bill_1.png
+Timestamp: 2026-01-30 20:06:24
+Status: ✅ SUCCESS
+============================================================
+
+📄 RAW OCR TEXT
+------------------------------------------------------------
+APOORVA DELICACTES
+Pure Veg
+Dacar(W) Manbat
+Date: 16/01/22 Bit wo. : SII
+PBoy: COUNTER
+Particulars ty Rate Ancunt
+EDU WADA 1 65 65
+SADA DOSA 1 7 70
+WSL. DOSA 1 0 8
+ONION RAVA DOSA 2 8 160
+CHEESE TOAST S/N, 2115 70
+sub Total: 508.00
+SGST.27AAFHK4833E1ZC @2.5% + 15.12
+OGST Z7AAFHK4B33EIZC @2.5% : 15.12
+57 Total 635
+FSGaT NO ~ 1516004000875 (08:13 PM)
+£.40.£. Thank You _—_Visit Again
+wx = 1
+PLEASE CHECK TH: BILL BEFORE MAK
+THE PAYMENT, NO COMPLATNTSN SIR 3
+ENTERTAIN THEREAFTER, A x
+<S
+// SRI GANESHAY wat,
+Take Away
+
+Length: 517 characters
+
+
+🤖 LLM EXTRACTED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "EDU WADA",
+      "quantity": 1,
+      "price": 65.0
+    },
+    {
+      "name": "SADA DOSA",
+      "quantity": 1,
+      "price": 70.0
+    },
+    {
+      "name": "WSL. DOSA",
+      "quantity": 1,
+      "price": 8.0
+    },
+    {
+      "name": "ONION RAVA DOSA",
+      "quantity": 2,
+      "price": 80.0
+    },
+    {
+      "name": "CHEESE TOAST S/N",
+      "quantity": 1,
+      "price": 115.0
+    }
+  ],
+  "subtotal": 538.0,
+  "tax": 97.0,
+  "total": 635.0
+}
+
+Items: 5
+
+
+✅ VALIDATED & CLEANED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "EDU WADA",
+      "quantity": 1,
+      "price": "65.00"
+    },
+    {
+      "name": "SADA DOSA",
+      "quantity": 1,
+      "price": "70.00"
+    },
+    {
+      "name": "WSL. DOSA",
+      "quantity": 1,
+      "price": "8.00"
+    },
+    {
+      "name": "ONION RAVA DOSA",
+      "quantity": 2,
+      "price": "80.00"
+    },
+    {
+      "name": "CHEESE TOAST S/N",
+      "quantity": 1,
+      "price": "115.00"
+    }
+  ],
+  "subtotal": "538.00",
+  "tax": "97.00",
+  "total": "635.00"
+}
+
+Valid Items: 5
+Total Amount: 635.00
+
+
+============================================================

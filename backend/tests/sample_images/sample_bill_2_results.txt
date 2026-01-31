@@ -1,0 +1,81 @@
+============================================================
+AI BILL SCANNING TEST RESULTS
+Image: sample_bill_2.png
+Timestamp: 2026-01-30 20:06:26
+Status: ✅ SUCCESS
+============================================================
+
+📄 RAW OCR TEXT
+------------------------------------------------------------
+Masterchef Family Restaurant
+& Bar
+a
+
+ame;
+a
+ate: 20/10/23 Dine In: F2
+Seu
+ashier: biller Bill No.: 43620
+pee NE i leet
+‘em Qty. Price Amour
+ee
+eg Pulav 1 179,00 179.0
+rinking Water1 1 20,00 20.0
+tr
+Total Qty: 2 Sub Total 199.0
+cGST 2.5% 4.4
+SGST 2.5% 4.4
+Round off +0.
+—— Grand Total %208.0
+
+Length: 291 characters
+
+
+🤖 LLM EXTRACTED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "eg Pulav",
+      "quantity": 1,
+      "price": 179.0
+    },
+    {
+      "name": "rinking Water",
+      "quantity": 1,
+      "price": 20.0
+    }
+  ],
+  "subtotal": 199.0,
+  "tax": 9.0,
+  "total": 208.0
+}
+
+Items: 2
+
+
+✅ VALIDATED & CLEANED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "eg Pulav",
+      "quantity": 1,
+      "price": "179.00"
+    },
+    {
+      "name": "rinking Water",
+      "quantity": 1,
+      "price": "20.00"
+    }
+  ],
+  "subtotal": "199.00",
+  "tax": "9.00",
+  "total": "208.00"
+}
+
+Valid Items: 2
+Total Amount: 208.00
+
+
+============================================================

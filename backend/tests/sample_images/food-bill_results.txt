@@ -1,0 +1,167 @@
+============================================================
+AI BILL SCANNING TEST RESULTS
+Image: food-bill.jpg
+Timestamp: 2026-01-30 20:06:18
+Status: ✅ SUCCESS
+============================================================
+
+📄 RAW OCR TEXT
+------------------------------------------------------------
+RESTAURANT
+
+pati No:oRTI735 1
+
+Gime Stoward Table Cover
+i514 MAKIN 34 5
+
+snc: 996332
+
+Description aty Amount
+veo wancua so 1129.00
+Veo sweet CORN 1 219,00
+DAL TADKA. 2 215.00
+HERA RICE 1 145,00
+PLAIN PAPAD 2 80.00
+EARED VEG WITH 1270.00
+MUSHROOM MATTA 1265.00
+BUDTER TANDOOR 1-27.00
+MISSI ROTI 1 30.00
+GARLIC NAAN 1 45.00
+
+‘otal amount 1315.00
+cost 2.56 2.58 32.08
+saat 2.58 2.58 32.81
+
+‘Bill Amount 1381.00
+
+Length: 407 characters
+
+
+🤖 LLM EXTRACTED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "veo wancua so",
+      "quantity": 1,
+      "price": 1129.0
+    },
+    {
+      "name": "Veo sweet CORN",
+      "quantity": 1,
+      "price": 219.0
+    },
+    {
+      "name": "DAL TADKA",
+      "quantity": 2,
+      "price": 215.0
+    },
+    {
+      "name": "HERA RICE",
+      "quantity": 1,
+      "price": 145.0
+    },
+    {
+      "name": "PLAIN PAPAD",
+      "quantity": 2,
+      "price": 80.0
+    },
+    {
+      "name": "EARED VEG WITH",
+      "quantity": 1,
+      "price": 1270.0
+    },
+    {
+      "name": "MUSHROOM MATTA",
+      "quantity": 1,
+      "price": 1265.0
+    },
+    {
+      "name": "BUDTER TANDOOR",
+      "quantity": 1,
+      "price": 27.0
+    },
+    {
+      "name": "MISSI ROTI",
+      "quantity": 1,
+      "price": 30.0
+    },
+    {
+      "name": "GARLIC NAAN",
+      "quantity": 1,
+      "price": 45.0
+    }
+  ],
+  "subtotal": 1315.0,
+  "tax": 66.0,
+  "total": 1381.0
+}
+
+Items: 10
+
+
+✅ VALIDATED & CLEANED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "veo wancua so",
+      "quantity": 1,
+      "price": "1129.00"
+    },
+    {
+      "name": "Veo sweet CORN",
+      "quantity": 1,
+      "price": "219.00"
+    },
+    {
+      "name": "DAL TADKA",
+      "quantity": 2,
+      "price": "215.00"
+    },
+    {
+      "name": "HERA RICE",
+      "quantity": 1,
+      "price": "145.00"
+    },
+    {
+      "name": "PLAIN PAPAD",
+      "quantity": 2,
+      "price": "80.00"
+    },
+    {
+      "name": "EARED VEG WITH",
+      "quantity": 1,
+      "price": "1270.00"
+    },
+    {
+      "name": "MUSHROOM MATTA",
+      "quantity": 1,
+      "price": "1265.00"
+    },
+    {
+      "name": "BUDTER TANDOOR",
+      "quantity": 1,
+      "price": "27.00"
+    },
+    {
+      "name": "MISSI ROTI",
+      "quantity": 1,
+      "price": "30.00"
+    },
+    {
+      "name": "GARLIC NAAN",
+      "quantity": 1,
+      "price": "45.00"
+    }
+  ],
+  "subtotal": "1315.00",
+  "tax": "66.00",
+  "total": "1381.00"
+}
+
+Valid Items: 10
+Total Amount: 1381.00
+
+
+============================================================

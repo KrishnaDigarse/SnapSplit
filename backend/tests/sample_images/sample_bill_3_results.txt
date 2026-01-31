@@ -1,0 +1,180 @@
+============================================================
+AI BILL SCANNING TEST RESULTS
+Image: sample_bill_3.png
+Timestamp: 2026-01-30 20:06:31
+Status: ✅ SUCCESS
+============================================================
+
+📄 RAW OCR TEXT
+------------------------------------------------------------
+__ Drive-in Road, Anmedabad-380 052. EVAN Nendo Lah
+962
+an a 13/05/2015
+Table No = No of Person Castier: 8.
+Sr.No] Description [ay [Price | Cost
+1 BUTTER MILK 3 40.00 120.00
+2: KABIR SPECIAL VEG. 1 180.00 180.00
+3. | VEG. DIWANI HAND! 1 | 185.00 | 185.00
+4 | PANEER BHURJI 1 } 190.00 | 190.00
+5 | PLAIN ROTI 4 | 21.00 84.00
+6 | MINERAL WATER(with service) 2 | 20.00 40.00
+7 | CHEESE NAAN 1 | 74.00 74.00
+8 | BUTTER ROTI 2 | 26.00 52.00
+9 | MASALA PAPAD 3 | 40.00 | 120.00
+10 ROASTED PAPAD 4 24.00 24.00
+11_| PANEER TIKKA (DRY) (8 PCS.) 1 | 195.00 | — 195.00
+12 | BAKED MACARONI/SPAGHETTI 1 | 175.00 | 175.00
+») Beas 3
+Rigo eee __ Total] 1439.00
+
+Length: 644 characters
+
+
+🤖 LLM EXTRACTED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "BUTTER MILK",
+      "quantity": 3,
+      "price": 40.0
+    },
+    {
+      "name": "KABIR SPECIAL VEG",
+      "quantity": 1,
+      "price": 180.0
+    },
+    {
+      "name": "VEG DIWANI HANDI",
+      "quantity": 1,
+      "price": 185.0
+    },
+    {
+      "name": "PANEER BHURJI",
+      "quantity": 1,
+      "price": 190.0
+    },
+    {
+      "name": "PLAIN ROTI",
+      "quantity": 4,
+      "price": 21.0
+    },
+    {
+      "name": "MINERAL WATER",
+      "quantity": 2,
+      "price": 20.0
+    },
+    {
+      "name": "CHEESE NAAN",
+      "quantity": 1,
+      "price": 74.0
+    },
+    {
+      "name": "BUTTER ROTI",
+      "quantity": 2,
+      "price": 26.0
+    },
+    {
+      "name": "MASALA PAPAD",
+      "quantity": 3,
+      "price": 40.0
+    },
+    {
+      "name": "ROASTED PAPAD",
+      "quantity": 4,
+      "price": 24.0
+    },
+    {
+      "name": "PANEER TIKKA (DRY)",
+      "quantity": 1,
+      "price": 195.0
+    },
+    {
+      "name": "BAKED MACARONI/SPAGHETTI",
+      "quantity": 1,
+      "price": 175.0
+    }
+  ],
+  "subtotal": 1439.0,
+  "tax": 0.0,
+  "total": 1439.0
+}
+
+Items: 12
+
+
+✅ VALIDATED & CLEANED DATA
+------------------------------------------------------------
+{
+  "items": [
+    {
+      "name": "BUTTER MILK",
+      "quantity": 3,
+      "price": "40.00"
+    },
+    {
+      "name": "KABIR SPECIAL VEG",
+      "quantity": 1,
+      "price": "180.00"
+    },
+    {
+      "name": "VEG DIWANI HANDI",
+      "quantity": 1,
+      "price": "185.00"
+    },
+    {
+      "name": "PANEER BHURJI",
+      "quantity": 1,
+      "price": "190.00"
+    },
+    {
+      "name": "PLAIN ROTI",
+      "quantity": 4,
+      "price": "21.00"
+    },
+    {
+      "name": "MINERAL WATER",
+      "quantity": 2,
+      "price": "20.00"
+    },
+    {
+      "name": "CHEESE NAAN",
+      "quantity": 1,
+      "price": "74.00"
+    },
+    {
+      "name": "BUTTER ROTI",
+      "quantity": 2,
+      "price": "26.00"
+    },
+    {
+      "name": "MASALA PAPAD",
+      "quantity": 3,
+      "price": "40.00"
+    },
+    {
+      "name": "ROASTED PAPAD",
+      "quantity": 4,
+      "price": "24.00"
+    },
+    {
+      "name": "PANEER TIKKA (DRY)",
+      "quantity": 1,
+      "price": "195.00"
+    },
+    {
+      "name": "BAKED MACARONI/SPAGHETTI",
+      "quantity": 1,
+      "price": "175.00"
+    }
+  ],
+  "subtotal": "1439.00",
+  "tax": "0.00",
+  "total": "1439.00"
+}
+
+Valid Items: 12
+Total Amount: 1439.00
+
+
+============================================================
