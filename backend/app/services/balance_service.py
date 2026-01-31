@@ -33,6 +33,10 @@ def compute_group_balances(db: Session, group_id: uuid.UUID) -> list[dict]:
     expenses = db.query(Expense).filter(Expense.group_id == group_id).all()
     
     for expense in expenses:
+        # Skip expenses that are still processing (total_amount is NULL)
+        if expense.total_amount is None:
+            continue
+            
         items = db.query(ExpenseItem).filter(ExpenseItem.expense_id == expense.id).all()
         
         for item in items:
