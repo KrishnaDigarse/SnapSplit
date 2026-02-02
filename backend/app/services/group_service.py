@@ -3,6 +3,9 @@ from fastapi import HTTPException, status
 from app.models.user import User
 from app.models.group import Group, GroupType
 from app.models.group_member import GroupMember
+from app.models.expense import Expense
+from app.models.expense_item import ExpenseItem
+from app.models.split import Split
 from app.schemas.group import GroupCreate, GroupMemberAdd
 from typing import List
 import uuid
@@ -146,3 +149,113 @@ def get_group_detail(db: Session, current_user: User, group_id: uuid.UUID) -> di
         "member_count": len(member_list),
         "members": member_list
     }
+
+
+def delete_group(db: Session, current_user: User, group_id: uuid.UUID) -> dict:
+    """Delete a group (creator only)"""
+    group = db.query(Group).filter(Group.id == group_id).first()
+    
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Group not found"
+        )
+    
+    if group.created_by != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only group creator can delete the group"
+        )
+    
+    # Delete all related data
+    # 1. Delete splits
+    expenses = db.query(Expense).filter(Expense.group_id == group_id).all()
+    for expense in expenses:
+        items = db.query(ExpenseItem).filter(ExpenseItem.expense_id == expense.id).all()
+        for item in items:
+            db.query(Split).filter(Split.expense_item_id == item.id).delete()
+        db.query(ExpenseItem).filter(ExpenseItem.expense_id == expense.id).delete()
+    
+    # 2. Delete expenses
+    db.query(Expense).filter(Expense.group_id == group_id).delete()
+    
+    # 3. Delete group members
+    db.query(GroupMember).filter(GroupMember.group_id == group_id).delete()
+    
+    # 4. Delete group
+    db.delete(group)
+    db.commit()
+    
+    return {"message": "Group deleted successfully"}
+
+
+def remove_member_from_group(db: Session, current_user: User, group_id: uuid.UUID, user_id: uuid.UUID) -> dict:
+    """Remove a member from group (creator only)"""
+    group = db.query(Group).filter(Group.id == group_id).first()
+    
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Group not found"
+        )
+    
+    if group.created_by != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only group creator can remove members"
+        )
+    
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot remove yourself from the group"
+        )
+    
+    member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == user_id
+    ).first()
+    
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User is not a member of this group"
+        )
+    
+    db.delete(member)
+    db.commit()
+    
+    return {"message": "Member removed successfully"}
+
+
+def leave_group(db: Session, current_user: User, group_id: uuid.UUID) -> dict:
+    """Leave a group (non-creators only)"""
+    group = db.query(Group).filter(Group.id == group_id).first()
+    
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Group not found"
+        )
+    
+    if group.created_by == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Group creators cannot leave the group. You must delete the group instead."
+        )
+    
+    member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == current_user.id
+    ).first()
+    
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are not a member of this group"
+        )
+    
+    db.delete(member)
+    db.commit()
+    
+    return {"message": "Left group successfully"}

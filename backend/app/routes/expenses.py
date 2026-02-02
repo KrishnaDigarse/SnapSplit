@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies.auth import get_current_user
 from app.models.user import User
-from app.schemas.expense import ManualExpenseCreate, ExpenseResponse, ExpenseDetailResponse
+from app.schemas.expense import ManualExpenseCreate, ExpenseResponse, ExpenseDetailResponse, ExpenseUpdate
 from app.services import expense_service
 from typing import List
 import uuid
@@ -39,3 +39,14 @@ def get_group_expenses(
 ):
     """Get all expenses for a group"""
     return expense_service.get_group_expenses(db, current_user, group_id)
+
+
+@router.put("/{expense_id}", response_model=ExpenseResponse)
+def update_expense(
+    expense_id: uuid.UUID,
+    expense_data: ExpenseUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update an expense"""
+    return expense_service.update_expense(db, current_user, expense_id, expense_data)

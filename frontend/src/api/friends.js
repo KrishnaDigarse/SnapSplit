@@ -29,5 +29,17 @@ export const friendsAPI = {
     getPendingRequests: async () => {
         const response = await client.get('/friends/requests');
         return response.data;
+    },
+
+    // Remove friend
+    removeFriend: async (friendId) => {
+        const response = await client.delete(`/friends/${friendId}`);
+        return response.data;
+    },
+
+    // Get DIRECT group for a friend
+    getDirectGroup: async (friendId) => {
+        const response = await client.get(`/friends/${friendId}/direct-group`);
+        return response.data;
     }
 };

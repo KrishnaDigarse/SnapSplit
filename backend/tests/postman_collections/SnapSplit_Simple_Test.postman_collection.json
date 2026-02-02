@@ -1,0 +1,444 @@
+{
+    "info": {
+        "_postman_id": "snapsplit-simple-test",
+        "name": "SnapSplit - Simple Backend Test",
+        "description": "Simplified test collection that works with actual API responses",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Login (Get Token)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "if (pm.response.code === 200) {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.environment.set('access_token', jsonData.access_token);",
+                            "    console.log('✅ Token saved:', jsonData.access_token);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/auth/login",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "auth",
+                        "login"
+                    ]
+                },
+                "description": "Login with existing user to get access token. Change email/password to match your user."
+            }
+        },
+        {
+            "name": "2. Send Friend Request",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "if (pm.response.code === 201) {",
+                            "    var jsonData = pm.response.json();",
+                            "    pm.environment.set('friend_request_id', jsonData.id);",
+                            "    console.log('✅ Friend request sent! ID:', jsonData.id);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"friend_email\": \"friend@example.com\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/friends/request",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "friends",
+                        "request"
+                    ]
+                },
+                "description": "Send a friend request. Change friend_email to an existing user's email."
+            }
+        },
+        {
+            "name": "3. Get Pending Friend Requests",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "if (pm.response.code === 200) {",
+                            "    var requests = pm.response.json();",
+                            "    console.log('✅ You have', requests.length, 'pending requests');",
+                            "    if (requests.length > 0) {",
+                            "        pm.environment.set('pending_request_id', requests[0].id);",
+                            "        console.log('Saved pending request ID:', requests[0].id);",
+                            "    }",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/friends/requests",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "friends",
+                        "requests"
+                    ]
+                },
+                "description": "Get pending friend requests (received). Saves first request ID."
+            }
+        },
+        {
+            "name": "4. Accept Friend Request",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "if (pm.response.code === 200) {",
+                            "    var jsonData = pm.response.json();",
+                            "    if (jsonData.direct_group_id) {",
+                            "        pm.environment.set('direct_group_id', jsonData.direct_group_id);",
+                            "        console.log('✅ Friend request accepted! DIRECT group created:', jsonData.direct_group_id);",
+                            "    }",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/friends/request/{{pending_request_id}}/accept",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "friends",
+                        "request",
+                        "{{pending_request_id}}",
+                        "accept"
+                    ]
+                },
+                "description": "Accept a pending friend request. Uses pending_request_id from step 3."
+            }
+        },
+        {
+            "name": "5. Reject Friend Request",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/friends/request/{{pending_request_id}}/reject",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "friends",
+                        "request",
+                        "{{pending_request_id}}",
+                        "reject"
+                    ]
+                },
+                "description": "Reject a pending friend request. Uses pending_request_id from step 3."
+            }
+        },
+        {
+            "name": "6. Get My Friends",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "if (pm.response.code === 200) {",
+                            "    var friends = pm.response.json();",
+                            "    console.log('✅ You have', friends.length, 'friends');",
+                            "    if (friends.length > 0) {",
+                            "        pm.environment.set('friend_id', friends[0].friend_id);",
+                            "        console.log('Saved friend_id:', friends[0].friend_id);",
+                            "    }",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/friends",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "friends"
+                    ]
+                },
+                "description": "Get list of friends. Saves first friend_id for testing."
+            }
+        },
+        {
+            "name": "7. Get My Groups",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "if (pm.response.code === 200) {",
+                            "    var groups = pm.response.json();",
+                            "    console.log('✅ You have', groups.length, 'groups');",
+                            "    if (groups.length > 0) {",
+                            "        pm.environment.set('group_id', groups[0].id);",
+                            "        console.log('Saved group_id:', groups[0].id);",
+                            "    }",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/groups",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "groups"
+                    ]
+                },
+                "description": "Get list of groups. Saves first group_id for testing."
+            }
+        },
+        {
+            "name": "8. Get Group Detail",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "if (pm.response.code === 200) {",
+                            "    var group = pm.response.json();",
+                            "    console.log('✅ Group:', group.name);",
+                            "    console.log('Members:', group.member_count);",
+                            "    if (group.members && group.members.length > 1) {",
+                            "        // Find a member that's not you",
+                            "        var otherMember = group.members.find(m => m.user_id !== pm.environment.get('current_user_id'));",
+                            "        if (otherMember) {",
+                            "            pm.environment.set('member_to_remove', otherMember.user_id);",
+                            "            console.log('Saved member to remove:', otherMember.user_id);",
+                            "        }",
+                            "    }",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/groups/{{group_id}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "groups",
+                        "{{group_id}}"
+                    ]
+                },
+                "description": "Get group details. Saves a member_id for testing removal."
+            }
+        },
+        {
+            "name": "9. Add Member to Group",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"user_id\": \"{{friend_id}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/groups/{{group_id}}/add-member",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "groups",
+                        "{{group_id}}",
+                        "add-member"
+                    ]
+                },
+                "description": "Add a friend to the group. Uses friend_id from step 2."
+            }
+        },
+        {
+            "name": "10. Remove Member from Group",
+            "request": {
+                "method": "DELETE",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/groups/{{group_id}}/members/{{member_to_remove}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "groups",
+                        "{{group_id}}",
+                        "members",
+                        "{{member_to_remove}}"
+                    ]
+                },
+                "description": "Remove a member from group. Uses member_to_remove from step 4."
+            }
+        },
+        {
+            "name": "11. Delete Group",
+            "request": {
+                "method": "DELETE",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/groups/{{group_id}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "groups",
+                        "{{group_id}}"
+                    ]
+                },
+                "description": "⚠️ WARNING: This will delete the group! Only run on test groups."
+            }
+        },
+        {
+            "name": "12. Remove Friend",
+            "request": {
+                "method": "DELETE",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/friends/{{friend_id}}",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "friends",
+                        "{{friend_id}}"
+                    ]
+                },
+                "description": "⚠️ WARNING: This will remove the friend and delete DIRECT group!"
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api/v1"
+        }
+    ]
+}

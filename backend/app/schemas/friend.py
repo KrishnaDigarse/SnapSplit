@@ -1,10 +1,10 @@
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, UUID4, EmailStr
 from datetime import datetime
 from app.models.friend_request import FriendRequestStatus
 
 
 class FriendRequestCreate(BaseModel):
-    receiver_id: UUID4
+    friend_email: EmailStr
 
 
 class FriendRequestResponse(BaseModel):

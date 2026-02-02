@@ -34,24 +34,12 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 async def upload_bill(
     image: Annotated[UploadFile, File(description="Bill image (JPG/PNG, max 10MB)")],
     group_id: Annotated[str, Form(description="Group ID")],
+    payer_id: Annotated[str | None, Form(description="Payer User ID")] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
     Upload a bill image for asynchronous AI processing.
-    
-    Process:
-    1. Validate user is a member of the group
-    2. Validate and save the uploaded image
-    3. Create expense with status PROCESSING
-    4. Enqueue background task for AI processing
-    5. Return immediately
-    
-    **Note:** This endpoint returns immediately. Use GET /expenses/{id}/status 
-    to poll for processing results.
-    
-    Returns:
-        Expense ID and PROCESSING status
     """
     logger.info(f"Bill upload request from user {current_user.id} for group {group_id}")
     
@@ -63,18 +51,45 @@ async def upload_bill(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid group_id format"
         )
+
+    # Determine payer (default to current user)
+    payer_uuid = current_user.id
+    if payer_id:
+        try:
+            payer_uuid = uuid.UUID(payer_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid payer_id format"
+            )
+
+    # Check validation for payer membership
+    # usage: if payer is not current user, ensure current user is still member implies we just need to check IF PAYER is member?
+    # Usually we want to ensure the uploaded `payer` is in the group.
     
-    # Check if user is a member of the group
     membership = db.query(GroupMember).filter(
         GroupMember.group_id == group_uuid,
-        GroupMember.user_id == current_user.id
+        GroupMember.user_id == payer_uuid
     ).first()
     
     if not membership:
-        raise HTTPException(
+         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not a member of this group"
+            detail="Payer is not a member of this group"
         )
+    
+    # Also validate current_user is member if different? 
+    # Usually uploader needs permission.
+    if payer_uuid != current_user.id:
+        uploader_membership = db.query(GroupMember).filter(
+            GroupMember.group_id == group_uuid,
+            GroupMember.user_id == current_user.id
+        ).first()
+        if not uploader_membership:
+             raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not a member of this group"
+            )
     
     # Validate file
     if not image.filename:
@@ -112,7 +127,7 @@ async def upload_bill(
     # Leave monetary fields NULL - will be set by AI task
     expense = Expense(
         group_id=group_uuid,
-        created_by=current_user.id,
+        created_by=payer_uuid,
         source_type=SourceType.BILL_IMAGE,
         status=ExpenseStatus.PROCESSING,
         subtotal=None,

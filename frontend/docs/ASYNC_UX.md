@@ -175,6 +175,8 @@ const { data: statusData } = useQuery({
 - Polling stopped
 - Error message displayed
 - Fallback options provided
+    - "Try Another Image": Resets the upload form
+    - "Add Manually": Redirects to `/groups/{id}/expense/manual` for direct entry
 
 ---
 

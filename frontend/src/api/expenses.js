@@ -29,13 +29,19 @@ export const expensesAPI = {
 
     // Create manual expense
     createManualExpense: async (data) => {
-        const response = await client.post('/expenses', data);
+        const response = await client.post('/expenses/manual', data);
         return response.data;
     },
 
     // Get expenses for a group
     getGroupExpenses: async (groupId) => {
         const response = await client.get(`/groups/${groupId}/expenses`);
+        return response.data;
+    },
+
+    // Update expense
+    updateExpense: async (expenseId, data) => {
+        const response = await client.put(`/expenses/${expenseId}`, data);
         return response.data;
     }
 };

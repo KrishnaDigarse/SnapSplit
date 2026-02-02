@@ -120,6 +120,7 @@ frontend/
 - **React Query** - Data fetching & caching
 - **Axios** - HTTP client
 - **Tailwind CSS** - Styling
+- **React Hot Toast** - Notifications
 
 ---
 

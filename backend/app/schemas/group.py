@@ -34,3 +34,22 @@ class GroupMemberResponse(BaseModel):
 
 class GroupDetailResponse(GroupResponse):
     members: List[GroupMemberResponse]
+
+
+from decimal import Decimal
+
+class GroupBalanceResponse(BaseModel):
+    user_id: UUID4
+    user_name: str
+    total_paid: Decimal
+    total_share: Decimal
+    net_balance: Decimal
+
+class DebtResponse(BaseModel):
+    from_user: str
+    to_user: str
+    amount: Decimal
+
+class BalanceViewResponse(BaseModel):
+    balances: List[GroupBalanceResponse]
+    debts: List[DebtResponse]

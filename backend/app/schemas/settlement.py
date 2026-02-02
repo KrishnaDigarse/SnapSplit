@@ -1,3 +1,4 @@
+from typing import List
 from pydantic import BaseModel, UUID4, field_validator
 from datetime import datetime
 from decimal import Decimal
@@ -38,3 +39,17 @@ class GroupBalanceResponse(BaseModel):
     user_name: str
     net_balance: Decimal
     updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class DebtResponse(BaseModel):
+    from_user: str
+    to_user: str
+    amount: Decimal
+
+
+class GroupFinancialsResponse(BaseModel):
+    balances: List[GroupBalanceResponse]
+    debts: List[DebtResponse]

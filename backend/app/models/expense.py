@@ -40,5 +40,9 @@ class Expense(Base):
     creator = relationship("User", back_populates="expenses_created")
     items = relationship("ExpenseItem", back_populates="expense", cascade="all, delete-orphan")
 
+    @property
+    def creator_name(self):
+        return self.creator.name if self.creator else None
+
     def __repr__(self):
         return f"<Expense(id={self.id}, total={self.total_amount}, status={self.status})>"

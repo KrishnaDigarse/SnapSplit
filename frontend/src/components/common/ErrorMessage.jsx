@@ -1,6 +1,6 @@
 export const ErrorMessage = ({ message, action }) => {
     return (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <div className="flex items-start">
                 <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
@@ -8,7 +8,7 @@ export const ErrorMessage = ({ message, action }) => {
                     </svg>
                 </div>
                 <div className="ml-3 flex-1">
-                    <p className="text-sm text-red-800">{message}</p>
+                    <p className="text-sm text-red-800 dark:text-red-200">{message}</p>
                     {action && <div className="mt-3">{action}</div>}
                 </div>
             </div>

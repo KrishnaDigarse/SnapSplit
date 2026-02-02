@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
+import { toast } from 'react-hot-toast';
 import { authAPI } from '../api/auth';
 
 const AuthContext = createContext(null);
@@ -23,16 +24,28 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (email, password) => {
-        const { access_token } = await authAPI.login(email, password);
-        localStorage.setItem('access_token', access_token);
-        const userData = await authAPI.getCurrentUser();
-        setUser(userData);
+        try {
+            const { access_token } = await authAPI.login(email, password);
+            localStorage.setItem('access_token', access_token);
+            const userData = await authAPI.getCurrentUser();
+            setUser(userData);
+            toast.success('Welcome back!');
+        } catch (error) {
+            toast.error(error.response?.data?.detail || 'Login failed');
+            throw error;
+        }
     };
 
     const register = async (email, password, name) => {
-        await authAPI.register(email, password, name);
-        // Auto-login after registration
-        await login(email, password);
+        try {
+            await authAPI.register(email, password, name);
+            toast.success('Registration successful! Logging in...');
+            // Auto-login after registration
+            await login(email, password);
+        } catch (error) {
+            toast.error(error.response?.data?.detail || 'Registration failed');
+            throw error;
+        }
     };
 
     const logout = () => {

@@ -6,6 +6,7 @@ from app.models.group_member import GroupMember
 from app.models.group_balance import GroupBalance
 from app.schemas.settlement import SettlementCreate
 from typing import List
+from typing import List
 import uuid
 
 
@@ -67,3 +68,20 @@ def get_group_balances(db: Session, current_user: User, group_id: uuid.UUID) -> 
     
     from app.services.balance_service import compute_group_balances
     return compute_group_balances(db, group_id)
+
+
+def get_group_financials(db: Session, current_user: User, group_id: uuid.UUID) -> dict:
+    """Get comprehensive group financials (balances + simplified debts)"""
+    is_member = db.query(GroupMember).filter(
+        GroupMember.group_id == group_id,
+        GroupMember.user_id == current_user.id
+    ).first()
+    
+    if not is_member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not a member of this group"
+        )
+        
+    from app.services.balance_service import calculate_group_debts
+    return calculate_group_debts(db, group_id)

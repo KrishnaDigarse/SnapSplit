@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from fastapi import HTTPException, status
 from app.models.user import User
 from app.models.friend_request import FriendRequest, FriendRequestStatus
@@ -167,3 +168,101 @@ def get_friends(db: Session, current_user: User) -> List[dict]:
         })
     
     return result
+
+
+def remove_friend(db: Session, current_user: User, friend_id: uuid.UUID) -> dict:
+    """Remove a friend and delete the DIRECT group"""
+    # Find the friendship (bidirectional)
+    friendship1 = db.query(Friend).filter(
+        Friend.user_id == current_user.id,
+        Friend.friend_id == friend_id
+    ).first()
+    
+    friendship2 = db.query(Friend).filter(
+        Friend.user_id == friend_id,
+        Friend.friend_id == current_user.id
+    ).first()
+    
+    if not friendship1 and not friendship2:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Friendship not found"
+        )
+    
+    # Find and delete the DIRECT group
+    from app.models.group_member import GroupMember
+    from app.models.expense import Expense
+    from app.models.expense_item import ExpenseItem
+    from app.models.split import Split
+    
+    # Find DIRECT group with both users
+    direct_group = db.query(Group).filter(
+        Group.type == GroupType.DIRECT
+    ).join(
+        GroupMember, Group.id == GroupMember.group_id
+    ).filter(
+        GroupMember.user_id.in_([current_user.id, friend_id])
+    ).group_by(Group.id).having(
+        func.count(GroupMember.user_id) == 2
+    ).first()
+    
+    if direct_group:
+        # Delete all related data
+        expenses = db.query(Expense).filter(Expense.group_id == direct_group.id).all()
+        for expense in expenses:
+            items = db.query(ExpenseItem).filter(ExpenseItem.expense_id == expense.id).all()
+            for item in items:
+                db.query(Split).filter(Split.expense_item_id == item.id).delete()
+            db.query(ExpenseItem).filter(ExpenseItem.expense_id == expense.id).delete()
+        
+        db.query(Expense).filter(Expense.group_id == direct_group.id).delete()
+        db.query(GroupMember).filter(GroupMember.group_id == direct_group.id).delete()
+        db.delete(direct_group)
+    
+    # Delete friendships
+    if friendship1:
+        db.delete(friendship1)
+    if friendship2:
+        db.delete(friendship2)
+    
+    db.commit()
+    
+    return {"message": "Friend removed successfully"}
+
+
+def get_direct_group(db: Session, current_user: User, friend_id: uuid.UUID) -> dict:
+    """Get the DIRECT group for a specific friend"""
+    # Verify friendship exists
+    friendship = db.query(Friend).filter(
+        Friend.user_id == current_user.id,
+        Friend.friend_id == friend_id
+    ).first()
+    
+    if not friendship:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Friendship not found"
+        )
+    
+    # Find DIRECT group with both users
+    direct_group = db.query(Group).filter(
+        Group.type == GroupType.DIRECT
+    ).join(
+        GroupMember, Group.id == GroupMember.group_id
+    ).filter(
+        GroupMember.user_id.in_([current_user.id, friend_id])
+    ).group_by(Group.id).having(
+        func.count(GroupMember.user_id) == 2
+    ).first()
+    
+    if not direct_group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="DIRECT group not found for this friendship"
+        )
+    
+    return {
+        "group_id": direct_group.id,
+        "group_name": direct_group.name,
+        "created_at": direct_group.created_at
+    }

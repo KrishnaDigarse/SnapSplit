@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../common/Button';
 
 export const Navbar = () => {
     const { user, isAuthenticated, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
 
     return (
-        <nav className="bg-white shadow-sm border-b">
+        <nav className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16">
                     <div className="flex items-center">
@@ -30,7 +32,14 @@ export const Navbar = () => {
                     <div className="flex items-center">
                         {isAuthenticated ? (
                             <div className="flex items-center space-x-4">
-                                <span className="text-sm text-gray-700">
+                                <button
+                                    onClick={toggleTheme}
+                                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-xl"
+                                    title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                                >
+                                    {theme === 'light' ? '🌙' : '☀️'}
+                                </button>
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
                                     {user?.name || user?.email}
                                 </span>
                                 <Button variant="outline" size="sm" onClick={logout}>
@@ -50,6 +59,6 @@ export const Navbar = () => {
                     </div>
                 </div>
             </div>
-        </nav>
+        </nav >
     );
 };
