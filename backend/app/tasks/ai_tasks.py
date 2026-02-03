@@ -124,6 +124,9 @@ def process_bill_image_task(
             f"{len(updated_expense.items)} items, total: {updated_expense.total_amount}"
         )
         
+        if updated_expense.created_by:
+            _send_notification(updated_expense.created_by, expense_id, "READY")
+        
         return {
             "status": "success",
             "message": "Bill processed successfully",
@@ -145,6 +148,8 @@ def process_bill_image_task(
                 expense.status = ExpenseStatus.FAILED
                 db.commit()
                 logger.error(f"Max retries exceeded for expense {expense_id}. Marked as FAILED.")
+                if expense.created_by:
+                    _send_notification(expense.created_by, expense_id, "FAILED")
         
         # Retry with exponential backoff (30s, 90s, 300s)
         raise self.retry(exc=e, countdown=30 * (3 ** self.request.retries))
@@ -156,6 +161,8 @@ def process_bill_image_task(
         if db and expense:
             expense.status = ExpenseStatus.FAILED
             db.commit()
+            if expense.created_by:
+                _send_notification(expense.created_by, expense_id, "FAILED")
         
         return {
             "status": "failed",
@@ -170,6 +177,8 @@ def process_bill_image_task(
         if db and expense:
             expense.status = ExpenseStatus.FAILED
             db.commit()
+            if expense.created_by:
+                _send_notification(expense.created_by, expense_id, "FAILED")
         
         return {
             "status": "failed",
@@ -181,3 +190,23 @@ def process_bill_image_task(
         # Always close database session
         if db:
             db.close()
+
+def _send_notification(user_id: str, expense_id: str, status: str):
+    """
+    Send webhook to backend to trigger WebSocket broadcast.
+    Fire-and-forget: we don't want to fail the task if notification fails.
+    """
+    try:
+        import requests
+        payload = {
+            "user_id": str(user_id),
+            "message": {
+                "type": "EXPENSE_STATUS_UPDATED",
+                "expense_id": str(expense_id),
+                "status": status
+            }
+        }
+        # Assuming backend runs on localhost:8000
+        requests.post("http://localhost:8000/ws/notify", json=payload, timeout=2)
+    except Exception as e:
+        logger.warning(f"Failed to send WebSocket notification for {expense_id}: {e}")

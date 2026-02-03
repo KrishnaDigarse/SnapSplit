@@ -13,11 +13,12 @@ A full-stack expense splitting application (Splitwise-like) with AI-powered bill
 ## Tech Stack
 
 - **Backend**: FastAPI, Python 3.10+
-- **Database**: PostgreSQL 15
+- **Database**: PostgreSQL 15 (with Connection Pooling)
 - **Cache**: Redis 7
 - **ORM**: SQLAlchemy 2.0
 - **Migrations**: Alembic
 - **Containerization**: Docker & Docker Compose
+- **Testing**: k6 (Load Testing)
 
 ## Quick Start
 
@@ -145,6 +146,26 @@ SnapSplit/
 ## License
 
 [Your License Here]
+
+## Load Testing & Performance
+
+The application is validated for high-concurrency production scenarios using **k6**.
+
+- **Verified Environment**: PostgreSQL 14+ with `psycopg2` driver and SQLAlchemy Connection Pooling.
+- **Benchmarks**: Verified stable up to 20 concurrent VUs with <50ms p95 latency on core endpoints.
+- **Reports**: See [docs/LOAD_TESTING_POSTGRES.md](docs/LOAD_TESTING_POSTGRES.md) for detailed results.
+
+### Running Load Tests
+```bash
+# Install k6
+winget install k6  # Windows
+brew install k6    # Mac
+
+# Run scenarios
+k6 run backend/tests/load/auth.js
+k6 run backend/tests/load/groups.js
+k6 run backend/tests/load/expenses.js
+```
 
 ## Contributing
 

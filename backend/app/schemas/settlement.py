@@ -37,6 +37,9 @@ class SettlementResponse(BaseModel):
 class GroupBalanceResponse(BaseModel):
     user_id: UUID4
     user_name: str
+    total_paid: Decimal = Decimal("0")
+    total_share: Decimal = Decimal("0")
+    total_settled: Decimal = Decimal("0")
     net_balance: Decimal
     updated_at: datetime
     

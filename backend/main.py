@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routes import auth, friends, groups, expenses, settlements, ai_expenses
+from app.routes import auth, friends, groups, expenses, settlements, ai_expenses, ws
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -17,12 +17,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from app.core.middleware import RequestLoggingMiddleware
+app.add_middleware(RequestLoggingMiddleware)
+
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(friends.router, prefix=settings.API_V1_STR)
 app.include_router(groups.router, prefix=settings.API_V1_STR)
 app.include_router(expenses.router, prefix=settings.API_V1_STR)
 app.include_router(settlements.router, prefix=settings.API_V1_STR)
 app.include_router(ai_expenses.router, prefix=settings.API_V1_STR)
+app.include_router(ws.router)  # Mounts at /ws
 
 
 @app.on_event("startup")

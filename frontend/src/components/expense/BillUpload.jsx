@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { expensesAPI } from '../../api/expenses';
 import { Button } from '../common/Button';
@@ -8,11 +8,15 @@ import { Spinner } from '../common/Spinner';
 import { ErrorMessage } from '../common/ErrorMessage';
 
 
+import { useWebSocket } from '../../hooks/useWebSocket';
+
 export const BillUpload = ({ groupId, onSuccess, members = [] }) => {
     const [file, setFile] = useState(null);
     const [expenseId, setExpenseId] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('idle'); // idle, uploading, processing, ready, failed
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const { lastMessage } = useWebSocket();
 
     // Upload mutation
     const uploadMutation = useMutation({
@@ -27,27 +31,25 @@ export const BillUpload = ({ groupId, onSuccess, members = [] }) => {
         }
     });
 
-    // ... (keep poll status logic) ...
+    // WebSocket listener for real-time updates
+    useEffect(() => {
+        if (lastMessage && lastMessage.type === 'EXPENSE_STATUS_UPDATED') {
+            if (expenseId && String(lastMessage.expense_id) === String(expenseId)) {
+                console.log('Received WebSocket update for current expense:', lastMessage);
+                queryClient.invalidateQueries(['expense-status', expenseId]);
+            }
+        }
+    }, [lastMessage, expenseId, queryClient]);
 
-    // Poll status (only when processing)
+    // Poll status (fallback only, very slow poll or manual invalidation)
     const { data: statusData } = useQuery({
         queryKey: ['expense-status', expenseId],
         queryFn: () => expensesAPI.pollExpenseStatus(expenseId),
         enabled: uploadStatus === 'processing' && !!expenseId,
-        refetchInterval: (query) => {
-            // Stop polling if status is not PROCESSING
-            const currentStatus = query?.state?.data?.status;
-            console.log('Polling status:', currentStatus);
-
-            if (currentStatus && currentStatus !== 'PROCESSING') {
-                console.log('Stopping poll - status is:', currentStatus);
-                return false;
-            }
-            return 2000; // Poll every 2 seconds
-        }
+        refetchInterval: 5000 // Reduced frequency fallback (5s instead of 2s)
     });
 
-    // Update status based on poll result
+    // Update status based on data (from Poll OR WebSocket invalidation)
     useEffect(() => {
         console.log('Status data updated:', statusData);
         if (statusData) {

@@ -231,6 +231,7 @@ export const GroupDetail = () => {
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Member</th>
                                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Paid</th>
                                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Share</th>
+                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Settled</th>
                                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Net Balance</th>
                                                 </tr>
                                             </thead>
@@ -245,6 +246,9 @@ export const GroupDetail = () => {
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
                                                             ₹{balance.total_share}
+                                                        </td>
+                                                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-right ${parseFloat(balance.total_settled) > 0 ? 'text-green-600' : parseFloat(balance.total_settled) < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                                                            {parseFloat(balance.total_settled) > 0 ? '+' : ''}{parseFloat(balance.total_settled) !== 0 ? `₹${parseFloat(balance.total_settled).toFixed(2)}` : '-'}
                                                         </td>
                                                         <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${parseFloat(balance.net_balance) >= 0
                                                             ? 'text-green-600 dark:text-green-400'

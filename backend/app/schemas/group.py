@@ -43,6 +43,7 @@ class GroupBalanceResponse(BaseModel):
     user_name: str
     total_paid: Decimal
     total_share: Decimal
+    total_settled: Decimal = Decimal("0")
     net_balance: Decimal
 
 class DebtResponse(BaseModel):

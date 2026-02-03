@@ -27,6 +27,7 @@ def compute_group_balances(db: Session, group_id: uuid.UUID) -> list[dict]:
             "user_name": user.name,
             "total_paid": Decimal("0"),
             "total_share": Decimal("0"),
+            "total_settled": Decimal("0"),  # Positive = Received, Negative = Paid
             "net_balance": Decimal("0"),
         }
     
@@ -66,9 +67,11 @@ def compute_group_balances(db: Session, group_id: uuid.UUID) -> list[dict]:
     for settlement in settlements:
         if settlement.paid_by in balances:
             balances[settlement.paid_by]["net_balance"] += settlement.amount
+            balances[settlement.paid_by]["total_settled"] -= settlement.amount
         
         if settlement.paid_to in balances:
             balances[settlement.paid_to]["net_balance"] -= settlement.amount
+            balances[settlement.paid_to]["total_settled"] += settlement.amount
     
     return list(balances.values())
 
