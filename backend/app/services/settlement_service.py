@@ -6,7 +6,6 @@ from app.models.group_member import GroupMember
 from app.models.group_balance import GroupBalance
 from app.schemas.settlement import SettlementCreate
 from typing import List
-from typing import List
 import uuid
 
 

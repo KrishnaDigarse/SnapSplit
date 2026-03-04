@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.models.group_member import GroupMember
 from app.models.group_balance import GroupBalance
 from app.models.split import Split
@@ -47,14 +48,26 @@ def compute_group_balances(db: Session, group_id: uuid.UUID) -> list[dict]:
         
         items = db.query(ExpenseItem).filter(ExpenseItem.expense_id == expense.id).all()
         
-        for item in items:
-            splits = db.query(Split).filter(Split.expense_item_id == item.id).all()
+        # PERFORMANCE FIX: Batch load all splits for all items in ONE query
+        # instead of N queries (one per item) - fixes N+1 problem
+        if items:
+            item_ids = [item.id for item in items]
+            all_splits = db.query(Split).filter(Split.expense_item_id.in_(item_ids)).all()
             
-            for split in splits:
-                if split.user_id in balances:
-                    balances[split.user_id]["total_share"] += split.amount
-                    balances[split.user_id]["net_balance"] -= split.amount
-                    expense_total_shares += split.amount
+            # Group splits by item_id for efficient lookup
+            splits_by_item = {}
+            for split in all_splits:
+                splits_by_item.setdefault(split.expense_item_id, []).append(split)
+            
+            # Process splits for each item
+            for item in items:
+                splits = splits_by_item.get(item.id, [])
+                
+                for split in splits:
+                    if split.user_id in balances:
+                        balances[split.user_id]["total_share"] += split.amount
+                        balances[split.user_id]["net_balance"] -= split.amount
+                        expense_total_shares += split.amount
 
         # Credit the payer with the EXACT amount that was split among members
         # This ensures Sum(Net Balances) == 0, preventing "phantom debt"
@@ -78,8 +91,17 @@ def compute_group_balances(db: Session, group_id: uuid.UUID) -> list[dict]:
 
 def update_group_balances(db: Session, group_id: uuid.UUID):
     """
-    Update the group_balances cache table. 
+    Update the group_balances cache table with row-level locking.
+    Uses SELECT FOR UPDATE to prevent race conditions when multiple
+    expenses are created simultaneously.
     """
+    # CONCURRENCY FIX: Lock all balance rows for this group to prevent race conditions
+    # This ensures that concurrent expense creations don't overwrite each other's balance updates
+    db.execute(
+        text("SELECT * FROM group_balances WHERE group_id = :gid FOR UPDATE"),
+        {"gid": str(group_id)}
+    )
+    
     computed_balances = compute_group_balances(db, group_id)
     
     for balance_data in computed_balances:

@@ -142,7 +142,30 @@ async def upload_bill(
     
     # Save uploaded file
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    file_path = os.path.join(UPLOAD_DIR, f"{expense.id}{file_ext}")
+    
+    # SECURITY: Sanitize file extension to prevent path traversal
+    # Extract extension and validate it's in allowed list BEFORE constructing path
+    file_ext = os.path.splitext(image.filename)[1].lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    # Use only UUID and validated extension - never trust user filename
+    safe_filename = f"{expense.id}{file_ext}"
+    file_path = os.path.join(UPLOAD_DIR, safe_filename)
+    
+    # SECURITY: Verify the resolved path is still within UPLOAD_DIR
+    # This prevents path traversal even if somehow a malicious path was constructed
+    upload_dir_abs = os.path.abspath(UPLOAD_DIR)
+    file_path_abs = os.path.abspath(file_path)
+    if not file_path_abs.startswith(upload_dir_abs):
+        logger.error(f"Path traversal attempt detected: {file_path}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path"
+        )
     
     try:
         # Reset file pointer

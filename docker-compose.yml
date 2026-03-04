@@ -13,7 +13,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U snapsplit_user -d snapsplit_db"]
+      test: [ "CMD-SHELL", "pg_isready -U snapsplit_user -d snapsplit_db" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,10 +28,29 @@ services:
       - redis_data:/data
     command: redis-server --appendonly yes
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend-spring
+      dockerfile: Dockerfile
+    container_name: snapsplit_backend
+    ports:
+      - "8000:8000"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/snapsplit_db
+      SPRING_DATASOURCE_USERNAME: snapsplit_user
+      SPRING_DATASOURCE_PASSWORD: snapsplit_password
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

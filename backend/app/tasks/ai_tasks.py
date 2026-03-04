@@ -198,6 +198,8 @@ def _send_notification(user_id: str, expense_id: str, status: str):
     """
     try:
         import requests
+        from app.core.config import settings
+        
         payload = {
             "user_id": str(user_id),
             "message": {
@@ -206,7 +208,14 @@ def _send_notification(user_id: str, expense_id: str, status: str):
                 "status": status
             }
         }
-        # Assuming backend runs on localhost:8000
-        requests.post("http://localhost:8000/ws/notify", json=payload, timeout=2)
+        
+        # Use configured backend URL instead of hardcoded localhost
+        # Include internal API key for authentication
+        headers = {
+            "X-Internal-API-Key": settings.INTERNAL_API_KEY
+        }
+        
+        url = f"{settings.BACKEND_URL}/ws/notify"
+        requests.post(url, json=payload, headers=headers, timeout=2)
     except Exception as e:
         logger.warning(f"Failed to send WebSocket notification for {expense_id}: {e}")

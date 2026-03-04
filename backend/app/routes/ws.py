@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends, HTTPException, status
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.core.security import decode_access_token
@@ -60,10 +60,27 @@ async def websocket_endpoint(
         manager.disconnect(websocket, user_id)
 
 @router.post("/notify", status_code=202)
-async def send_notification(payload: NotificationPayload):
+async def send_notification(
+    payload: NotificationPayload,
+    x_internal_api_key: str = Header(..., alias="X-Internal-API-Key")
+):
     """
     Internal endpoint to trigger WebSocket broadcasts.
-    In a real system, verify source specific key or ensure network isolation.
+    
+    SECURITY: This endpoint requires an internal API key to prevent
+    unauthorized users from spoofing notifications.
+    
+    The API key should be set in the INTERNAL_API_KEY environment variable
+    and passed in the X-Internal-API-Key header.
     """
+    from app.core.config import settings
+    
+    if x_internal_api_key != settings.INTERNAL_API_KEY:
+        logger.warning(f"Unauthorized WebSocket notification attempt for user {payload.user_id}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid API key"
+        )
+    
     await manager.broadcast_to_user(payload.user_id, payload.message)
     return {"status": "sent"}

@@ -54,3 +54,5 @@ run.txt
 
 node_modules
 
+.env.prod
+backend

@@ -16,7 +16,9 @@ class SettlementCreate(BaseModel):
     @classmethod
     def validate_amount(cls, v):
         if v <= 0:
-            raise ValueError("amount must be greater than 0")
+            raise ValueError("Amount must be greater than 0")
+        if v > Decimal('1000000'):
+            raise ValueError("Settlement amount exceeds maximum allowed value ($1,000,000)")
         return v
 
 

@@ -16,9 +16,14 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     """Hash a password"""
-    # Bcrypt has a 72-byte limit
-    if len(password.encode('utf-8')) > 72:
-        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+    # Bcrypt/pbkdf2 has a 72-byte limit - reject passwords that are too long
+    # instead of truncating (which can corrupt multi-byte UTF-8 characters)
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        raise ValueError(
+            "Password is too long. Maximum length is 72 bytes "
+            f"(your password is {len(password_bytes)} bytes)"
+        )
     return pwd_context.hash(password)
 
 
