@@ -10,12 +10,21 @@ RUN mvn package -DskipTests -B
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
+# Install Tesseract OCR for AI bill-scanning pipeline
+RUN apk add --no-cache tesseract-ocr tesseract-ocr-data-eng
+
 # Create non-root user
 RUN addgroup -S spring && adduser -S spring -G spring
+
+# Create uploads directory
+RUN mkdir -p /app/uploads/bills && chown -R spring:spring /app
+
 USER spring:spring
 
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8000
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", \
+    "-Djava.awt.headless=true", \
+    "-jar", "app.jar"]

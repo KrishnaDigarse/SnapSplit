@@ -1,5 +1,0 @@
-from enum import Enum
-
-class WebSocketEvent(str, Enum):
-    EXPENSE_STATUS_UPDATED = "EXPENSE_STATUS_UPDATED"
-    SETTLEMENT_RECORDED = "SETTLEMENT_RECORDED"

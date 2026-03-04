@@ -4,26 +4,28 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
     ports:
       - "80:80"
     depends_on:
       - backend
     networks:
       - snapsplit-network
+    restart: unless-stopped
 
   backend:
     build:
-      context: ./backend
+      context: ./backend-spring
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
-      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
-      - SECRET_KEY=${JWT_SECRET_KEY}
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - ENVIRONMENT=${ENV}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/snapsplit_db
+      SPRING_DATASOURCE_USERNAME: snapsplit_user
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-snapsplit_password}
+      SPRING_DATA_REDIS_HOST: redis
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      APP_JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+    volumes:
+      - bill_uploads:/app/uploads/bills
     depends_on:
       postgres:
         condition: service_healthy
@@ -32,39 +34,19 @@ services:
     networks:
       - snapsplit-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8000/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
-    # Exposing 8000 internally to frontend (via nginx proxy) and host for debugging if needed, 
-    # but strictly speaking only frontend needs to reach it via network alias 'backend' on port 8000.
-    # Mapping to host 8000 allows direct API access if desired.
     ports:
       - "8000:8000"
-
-  celery-worker:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    command: celery -A app.celery_app worker --loglevel=info --concurrency=4
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
-      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
-      - SECRET_KEY=${JWT_SECRET_KEY}
-      - GROQ_API_KEY=${GROQ_API_KEY}
-    depends_on:
-      - backend
-      - redis
-    networks:
-      - snapsplit-network
+    restart: unless-stopped
 
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     environment:
       POSTGRES_USER: snapsplit_user
-      POSTGRES_PASSWORD: snapsplit_password
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-snapsplit_password}
       POSTGRES_DB: snapsplit_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -75,6 +57,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -88,6 +71,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
 networks:
   snapsplit-network:
@@ -96,3 +80,4 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  bill_uploads:

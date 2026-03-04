@@ -46,6 +46,9 @@ services:
       SPRING_DATASOURCE_USERNAME: snapsplit_user
       SPRING_DATASOURCE_PASSWORD: snapsplit_password
       SPRING_DATA_REDIS_HOST: redis
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+    volumes:
+      - bill_uploads:/app/uploads/bills
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,4 +60,6 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  bill_uploads:
     driver: local

@@ -2,12 +2,19 @@ package com.snapsplit.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
+/**
+ * Async configuration — replaces Celery worker setup.
+ * Enables @Async methods (used by AiExpenseService.processBillImageAsync).
+ */
 @Configuration
-public class AsyncConfig {
+@EnableAsync
+public class AsyncConfig implements AsyncConfigurer {
 
     @Bean(name = "aiTaskExecutor")
     public Executor aiTaskExecutor() {
@@ -18,5 +25,10 @@ public class AsyncConfig {
         executor.setThreadNamePrefix("ai-task-");
         executor.initialize();
         return executor;
+    }
+
+    @Override
+    public Executor getAsyncExecutor() {
+        return aiTaskExecutor();
     }
 }
